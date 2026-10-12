@@ -310,3 +310,7 @@ C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-maccatalyst\
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-maccatalyst\maccatalyst-x64\PayTracker.pdb
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-maccatalyst\maccatalyst-x64\PayTracker.genruntimeconfig.cache
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-maccatalyst\maccatalyst-x64\ref\PayTracker.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.Maui.Controls.HotReload.Forms.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.VisualStudio.DesignTools.MobileTapContracts.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.VisualStudio.DesignTools.TapContract.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-maccatalyst\maccatalyst-x64\Microsoft.VisualStudio.DesignTools.XamlTapContract.dll
