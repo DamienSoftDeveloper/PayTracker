@@ -1,378 +1,205 @@
+using System;
+using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using PayTracker.Models;
 using PayTracker.Services;
-using System;
-using System.Diagnostics;
-using System.Globalization;
-using System.Threading.Tasks;
 
 namespace PayTracker.Pages;
 
 public partial class PaymentsPage : ContentPage
 {
-    private static readonly CultureInfo Pounds =
-        CultureInfo.GetCultureInfo("en-GB");
-
     private readonly PaymentStore _store = PaymentStore.Instance;
-
-    private Payment? _editingPayment;
-    private bool _recordingPaidDate;
-    private bool _busy;
+    private readonly Label _month = LessonUi.Heading("");
+    private readonly Label _error = new() { TextColor = Colors.OrangeRed, IsVisible = false };
+    private readonly CollectionView _list = new() { SelectionMode = SelectionMode.None };
+    private readonly VerticalStackLayout _toolbar = new() { Spacing = 8 };
+    private readonly VerticalStackLayout _form = new() { Spacing = 10 };
+    private readonly ScrollView _editor;
+    private readonly Button _add;
+    private readonly Entry _name = new() { Placeholder = "Payment name" };
+    private readonly Entry _amount = new() { Keyboard = Keyboard.Numeric, Placeholder = "25.00" };
+    private readonly DatePicker _due = new() { Format = "dd MMM yyyy" };
+    private readonly DatePicker _paid = new() { Format = "dd MMM yyyy" };
+    private Payment? _editing;
+    private bool _paidMode;
     private bool _loaded;
 
     public PaymentsPage()
     {
         InitializeComponent();
+        _add = LessonUi.Button("Add one-off payment", () =>
+        {
+            if (_loaded) OpenEditor(null, false);
+            return Task.CompletedTask;
+        });
+        _add.IsEnabled = false;
+        _toolbar.Children.Add(LessonUi.MonthBar(this, _store, SelectMonthAsync, _month, _error));
+        _toolbar.Children.Add(_add);
+        _toolbar.Children.Add(LessonUi.Button("Recurring schedules", () => LessonUi.RunAsync(this,
+            () => Navigation.PushAsync(new RecurringPaymentsPage()), _error)));
+        _toolbar.Children.Add(LessonUi.Button("Refresh", () => LessonUi.RunAsync(this,
+            () => SelectMonthAsync(_store.SelectedMonth), _error)));
 
-        PaymentsList.ItemsSource = _store.Payments;
+        _list.ItemsSource = _store.Payments;
+        _list.EmptyView = "No payments in this month.";
+        _list.ItemTemplate = new DataTemplate(CreatePaymentCard);
+        _editor = new ScrollView { Content = _form, IsVisible = false };
 
-        // Enable adding only after the initial database load succeeds.
-        AddButton.IsEnabled = false;
+        var grid = new Grid
+        {
+            Padding = 16, RowSpacing = 10,
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Star }
+            }
+        };
+        grid.Add(_toolbar, 0, 0);
+        grid.Add(_error, 0, 1);
+        grid.Add(_list, 0, 2);
+        grid.Add(_editor, 0, 2);
+        Content = grid;
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-
-        if (_loaded || _busy)
-        {
-            return;
-        }
-
-        await RunDatabaseOperationAsync(
-            async () =>
-            {
-                await _store.LoadAsync();
-                _loaded = true;
-            },
-            "Could not load payments");
+        if (_editor.IsVisible) return;
+        await LessonUi.RunAsync(this, () => SelectMonthAsync(_store.SelectedMonth), _error);
     }
 
-    private void OnAddClicked(object sender, EventArgs e)
+    private async Task SelectMonthAsync(DateTime month)
     {
-        if (_busy || !_loaded)
-        {
-            return;
-        }
-
-        OpenEditor(null, recordingPaidDate: false);
+        await _store.SelectMonthAsync(month);
+        _loaded = true;
+        _add.IsEnabled = true;
+        _month.Text = _store.SelectedMonth.ToString("MMMM yyyy");
     }
 
-    private void OnEditClicked(object sender, EventArgs e)
+    private View CreatePaymentCard()
     {
-        if (_busy || !_loaded)
+        var name = LessonUi.Heading("");
+        name.SetBinding(Label.TextProperty, nameof(Payment.Name));
+        var trigger = new DataTrigger(typeof(Label))
         {
-            return;
-        }
-
-        if (GetPayment(sender) is Payment payment)
+            Binding = new Binding(nameof(Payment.IsPaid)), Value = true
+        };
+        trigger.Setters.Add(new Setter { Property = Label.TextDecorationsProperty, Value = TextDecorations.Strikethrough });
+        name.Triggers.Add(trigger);
+        var stack = new VerticalStackLayout { Spacing = 6 };
+        stack.Children.Add(name);
+        foreach (string property in new[] { nameof(Payment.AmountText), nameof(Payment.DueText),
+            nameof(Payment.StatusText), nameof(Payment.KindText) })
         {
-            OpenEditor(payment, recordingPaidDate: false);
+            var label = LessonUi.Text("");
+            label.SetBinding(Label.TextProperty, property);
+            stack.Children.Add(label);
         }
+        stack.Children.Add(PaymentButton("Edit this payment", p =>
+        {
+            OpenEditor(p, false); return Task.CompletedTask;
+        }));
+        stack.Children.Add(PaymentButton("Record / change paid date", p =>
+        {
+            OpenEditor(p, true); return Task.CompletedTask;
+        }));
+        var unpaid = PaymentButton("Mark unpaid", async p =>
+        {
+            if (await DisplayAlertAsync("Mark unpaid?", "Clear this month's paid date?", "Clear", "Cancel"))
+                await _store.UpdateAsync(p with { PaidDate = null });
+        });
+        unpaid.SetBinding(IsVisibleProperty, nameof(Payment.IsPaid));
+        stack.Children.Add(unpaid);
+        stack.Children.Add(PaymentButton("Delete this payment", async p =>
+        {
+            if (await DisplayAlertAsync("Delete payment?",
+                "Delete this month's record? Other months and its recurring schedule are kept.", "Delete", "Cancel"))
+                await _store.DeleteAsync(p);
+        }));
+        return LessonUi.Card(stack);
     }
 
-    private void OnMarkPaidClicked(object sender, EventArgs e)
+    private Button PaymentButton(string text, Func<Payment, Task> action)
     {
-        if (_busy || !_loaded)
+        var button = new Button { Text = text };
+        button.SetBinding(Button.CommandParameterProperty, ".");
+        button.Clicked += async (_, _) =>
         {
-            return;
-        }
-
-        if (GetPayment(sender) is Payment payment)
-        {
-            OpenEditor(payment, recordingPaidDate: true);
-        }
+            if (button.CommandParameter is Payment payment)
+                await LessonUi.RunAsync(this, () => action(payment), _error);
+        };
+        return button;
     }
 
-    private void OpenEditor(
-        Payment? payment,
-        bool recordingPaidDate)
+    private void OpenEditor(Payment? payment, bool paidMode)
     {
-        _editingPayment = payment;
-        _recordingPaidDate = recordingPaidDate;
-
-        EditorTitle.Text = recordingPaidDate
-            ? $"Record payment: {payment!.Name}"
-            : payment is null
-                ? "Add payment"
-                : "Edit payment";
-
-        NameEntry.Text = payment?.Name ?? "";
-
-        AmountEntry.Text = payment is null
-            ? ""
-            : payment.Amount.ToString("0.00", Pounds);
-
-        DueDatePicker.Date = payment?.DueDate ?? DateTime.Today;
-
-        PaidDatePicker.MaximumDate = DateTime.Today;
-        PaidDatePicker.Date = payment?.PaidDate ?? DateTime.Today;
-
-        DetailsFields.IsVisible = !recordingPaidDate;
-        PaidFields.IsVisible = recordingPaidDate;
-
-        ErrorLabel.IsVisible = false;
-
-        AddButton.IsVisible = false;
-        PaymentsList.IsVisible = false;
-        EditorPanel.IsVisible = true;
-    }
-
-    private async void OnSaveClicked(object sender, EventArgs e)
-    {
-        if (_busy || !_loaded)
+        _editing = payment;
+        _paidMode = paidMode;
+        _error.IsVisible = false;
+        _form.Children.Clear();
+        _form.Children.Add(LessonUi.Heading(paidMode ? "Record paid date" :
+            payment is null ? "Add one-off payment" : "Edit this month's payment"));
+        if (paidMode)
         {
-            return;
-        }
-
-        Payment savedPayment;
-        bool isNew;
-
-        if (_recordingPaidDate)
-        {
-            if (_editingPayment is null)
-            {
-                ShowError("Select a payment first.");
-                return;
-            }
-
-            if (PaidDatePicker.Date is not DateTime paidDate)
-            {
-                ShowError("Choose the date you paid.");
-                return;
-            }
-
-            if (paidDate.Date > DateTime.Today)
-            {
-                ShowError("The paid date cannot be in the future.");
-                return;
-            }
-
-            savedPayment = _editingPayment with
-            {
-                PaidDate = paidDate.Date
-            };
-
-            isNew = false;
+            _paid.MaximumDate = DateTime.Today;
+            _paid.Date = payment?.PaidDate ?? DateTime.Today;
+            _form.Children.Add(LessonUi.Text("Paid date (may be in another month)"));
+            _form.Children.Add(_paid);
         }
         else
         {
-            string name = NameEntry.Text?.Trim() ?? "";
-
-            if (string.IsNullOrWhiteSpace(name))
-            {
-                ShowError("Enter a payment name.");
-                return;
-            }
-
-            const NumberStyles amountStyle =
-                NumberStyles.AllowLeadingWhite |
-                NumberStyles.AllowTrailingWhite |
-                NumberStyles.AllowLeadingSign |
-                NumberStyles.AllowDecimalPoint;
-
-            if (!decimal.TryParse(
-                    AmountEntry.Text,
-                    amountStyle,
-                    CultureInfo.InvariantCulture,
-                    out decimal amount)
-                || amount <= 0)
-            {
-                ShowError(
-                    "Enter an amount greater than zero, such as 12.99. " +
-                    "Use a decimal point and omit the £ symbol.");
-                return;
-            }
-
-            if (decimal.Round(amount, 2) != amount)
-            {
-                ShowError("Use no more than two decimal places.");
-                return;
-            }
-
-            // A generous limit that also keeps conversion to pence safe.
-            if (amount > 999_999_999.99m)
-            {
-                ShowError("The maximum amount is £999,999,999.99.");
-                return;
-            }
-
-            if (DueDatePicker.Date is not DateTime dueDate)
-            {
-                ShowError("Choose a due date.");
-                return;
-            }
-
-            isNew = _editingPayment is null;
-
-            savedPayment = (_editingPayment ?? new Payment()) with
-            {
-                Name = name,
-                Amount = amount,
-                DueDate = dueDate.Date
-            };
+            _name.Text = payment?.Name ?? "";
+            _amount.Text = payment is null ? "" : LessonUi.AmountEntryText(payment.Amount);
+            // Clear the old range before switching months.
+            _due.MinimumDate = new DateTime(1900, 1, 1);
+            _due.MaximumDate = new DateTime(2100, 12, 31);
+            var month = payment?.RecordMonth ?? _store.SelectedMonth;
+            _due.Date = payment?.DueDate ?? month;
+            _due.MinimumDate = month;
+            _due.MaximumDate = month.AddMonths(1).AddDays(-1);
+            _form.Children.Add(LessonUi.Text("Name")); _form.Children.Add(_name);
+            _form.Children.Add(LessonUi.Text("Amount (£), for example 12.99")); _form.Children.Add(_amount);
+            _form.Children.Add(LessonUi.Text("Due date within the selected month")); _form.Children.Add(_due);
+            if (payment?.IsRecurring == true)
+                _form.Children.Add(LessonUi.Text("This edit affects only this month's record. Change future defaults in Recurring schedules."));
         }
-
-        await RunDatabaseOperationAsync(
-            async () =>
-            {
-                if (isNew)
-                {
-                    await _store.AddAsync(savedPayment);
-                }
-                else
-                {
-                    await _store.UpdateAsync(savedPayment);
-                }
-
-                CloseEditor();
-            },
-            "Could not save payment");
+        _form.Children.Add(LessonUi.Button("Save", () => LessonUi.RunAsync(this, SaveAsync, _error)));
+        _form.Children.Add(LessonUi.Button("Cancel", () => { CloseEditor(); return Task.CompletedTask; }));
+        _toolbar.IsVisible = false;
+        _list.IsVisible = false;
+        _editor.IsVisible = true;
     }
 
-    private async void OnDeleteClicked(object sender, EventArgs e)
+    private async Task SaveAsync()
     {
-        if (_busy || !_loaded)
+        Payment payment;
+        if (_paidMode)
         {
-            return;
+            if (_editing is null || _paid.Date is not DateTime paid)
+                throw new ArgumentException("Choose a paid date.");
+            payment = _editing with { PaidDate = paid.Date };
         }
-
-        if (GetPayment(sender) is not Payment payment)
+        else
         {
-            return;
+            string name = _name.Text?.Trim() ?? "";
+            if (name.Length == 0) throw new ArgumentException("Enter a name.");
+            if (!LessonUi.TryAmount(_amount.Text, out decimal amount))
+                throw new ArgumentException("Enter a positive amount with at most two decimal places, using a decimal point.");
+            if (_due.Date is not DateTime due) throw new ArgumentException("Choose a due date.");
+            payment = (_editing ?? new Payment { RecordMonth = _store.SelectedMonth }) with
+                { Name = name, Amount = amount, DueDate = due.Date };
         }
-
-        await RunDatabaseOperationAsync(
-            async () =>
-            {
-                bool confirmed = await DisplayAlertAsync(
-                    "Delete payment?",
-                    $"Delete \"{payment.Name}\"?",
-                    "Delete",
-                    "Cancel");
-
-                if (confirmed)
-                {
-                    await _store.DeleteAsync(payment);
-                }
-            },
-            "Could not delete payment");
-    }
-
-    private async void OnMarkUnpaidClicked(object sender, EventArgs e)
-    {
-        if (_busy || !_loaded)
-        {
-            return;
-        }
-
-        if (GetPayment(sender) is not Payment payment)
-        {
-            return;
-        }
-
-        await RunDatabaseOperationAsync(
-            async () =>
-            {
-                bool confirmed = await DisplayAlertAsync(
-                    "Mark unpaid?",
-                    $"Clear the paid date for \"{payment.Name}\"?",
-                    "Mark unpaid",
-                    "Cancel");
-
-                if (confirmed)
-                {
-                    await _store.UpdateAsync(payment with
-                    {
-                        PaidDate = null
-                    });
-                }
-            },
-            "Could not change paid status");
-    }
-
-    private void OnCancelClicked(object sender, EventArgs e)
-    {
-        if (!_busy)
-        {
-            CloseEditor();
-        }
+        if (_editing is null) await _store.AddAsync(payment);
+        else await _store.UpdateAsync(payment);
+        CloseEditor();
     }
 
     private void CloseEditor()
     {
-        EditorPanel.IsVisible = false;
-        AddButton.IsVisible = true;
-        PaymentsList.IsVisible = true;
-
-        _editingPayment = null;
-        _recordingPaidDate = false;
-        ErrorLabel.IsVisible = false;
-    }
-
-    private void ShowError(string message)
-    {
-        ErrorLabel.Text = message;
-        ErrorLabel.IsVisible = true;
-    }
-
-    private async Task RunDatabaseOperationAsync(
-        Func<Task> operation,
-        string errorTitle)
-    {
-        if (_busy)
-        {
-            return;
-        }
-
-        SetBusy(true);
-
-        try
-        {
-            await operation();
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-
-            // Preserve the form so the user can retry saving.
-            if (EditorPanel.IsVisible)
-            {
-                ShowError(
-                    "The change could not be saved. " +
-                    "Your entries are still here; try again.");
-            }
-
-            await DisplayAlertAsync(
-                errorTitle,
-                "PayTrack could not complete the database operation. " +
-                "Please try again. Technical details are in " +
-                "Visual Studio's Debug Output.",
-                "OK");
-        }
-        finally
-        {
-            SetBusy(false);
-        }
-    }
-
-    private void SetBusy(bool busy)
-    {
-        _busy = busy;
-
-        // Prevent repeated taps while an operation is running.
-        if (Content is not null)
-        {
-            Content.IsEnabled = !busy;
-        }
-
-        AddButton.IsEnabled = !busy && _loaded;
-    }
-
-    private static Payment? GetPayment(object sender)
-    {
-        return sender is Button button
-            ? button.CommandParameter as Payment
-            : null;
+        _editor.IsVisible = false; _toolbar.IsVisible = true; _list.IsVisible = true;
+        _editing = null; _error.IsVisible = false;
     }
 }

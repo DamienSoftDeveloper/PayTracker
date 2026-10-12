@@ -1,4 +1,4 @@
-<api type="debug" assembly-name="PayTracker" mvid="6c191b59fe2f458883ab9654d082ed88">
+<api type="debug" assembly-name="PayTracker" mvid="aa7dfb2dbf454955b46f514734354bc6">
   <java-to-managed>
     <entry java-name="crc64e58c5a132310ec9a/MainActivity" managed-name="PayTracker.MainActivity, PayTracker" managed-type-token-id="33554441" />
     <entry java-name="crc64e58c5a132310ec9a/MainApplication" managed-name="PayTracker.MainApplication, PayTracker" managed-type-token-id="33554442" />

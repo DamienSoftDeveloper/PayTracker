@@ -1,9 +1,9 @@
 using System;
-using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Maui;
 using Microsoft.Maui.Controls;
+using Microsoft.Maui.Graphics;
 using PayTracker.Models;
 using PayTracker.Services;
 
@@ -11,137 +11,83 @@ namespace PayTracker.Pages;
 
 public partial class DashboardPage : ContentPage
 {
-    private static readonly CultureInfo Pounds =
-        CultureInfo.GetCultureInfo("en-GB");
-
     private readonly PaymentStore _store = PaymentStore.Instance;
-
-    private bool _refreshing;
-    private bool _hasLoaded;
+    private readonly Label _month = LessonUi.Heading("");
+    private readonly Label _error = new() { TextColor = Colors.OrangeRed, IsVisible = false };
+    private readonly Label _total = LessonUi.Heading("--");
+    private readonly Label _paid = LessonUi.Heading("--");
+    private readonly Label _remaining = LessonUi.Heading("--");
+    private readonly Label _overdue = LessonUi.Heading("--");
+    private readonly Label _count = LessonUi.Text("");
+    private readonly Label _updated = LessonUi.Text("");
+    private readonly VerticalStackLayout _preview = new() { Spacing = 8 };
 
     public DashboardPage()
     {
         InitializeComponent();
+        var cards = new Grid
+        {
+            ColumnSpacing = 12, RowSpacing = 8,
+            ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition() },
+            RowDefinitions =
+            {
+                new RowDefinition { Height = GridLength.Auto },
+                new RowDefinition { Height = GridLength.Auto }
+            }
+        };
+        cards.Add(SummaryCard("Scheduled for month", _total), 0, 0);
+        cards.Add(SummaryCard("Paid for month", _paid), 1, 0);
+        cards.Add(SummaryCard("Remaining", _remaining), 0, 1);
+        cards.Add(SummaryCard("Overdue as of today", _overdue), 1, 1);
+        var body = new VerticalStackLayout { Padding = 20, Spacing = 14 };
+        body.Children.Add(LessonUi.Heading("Welcome to PayTracker"));
+        body.Children.Add(LessonUi.MonthBar(this, _store, SelectMonthAsync, _month, _error));
+        body.Children.Add(LessonUi.Button("Refresh dashboard", () => LessonUi.RunAsync(this,
+            () => SelectMonthAsync(_store.SelectedMonth), _error)));
+        body.Children.Add(_error);
+        body.Children.Add(LessonUi.Text("Totals belong to the selected payment month, even when you paid on a different date."));
+        body.Children.Add(cards); body.Children.Add(_count);
+        body.Children.Add(LessonUi.Heading("Next unpaid payments"));
+        body.Children.Add(LessonUi.Text("Up to five in this month, earliest due first. Includes overdue payments."));
+        body.Children.Add(_preview); body.Children.Add(_updated);
+        Content = new ScrollView { Content = body };
     }
+
+    private static Border SummaryCard(string title, Label value) => LessonUi.Card(
+        new VerticalStackLayout { Spacing = 8, Children = { LessonUi.Text(title), value } });
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-
-        await RefreshDashboardAsync();
+        await LessonUi.RunAsync(this, () => SelectMonthAsync(_store.SelectedMonth), _error);
     }
 
-    private async void OnRefreshClicked(object sender, EventArgs e)
+    private async Task SelectMonthAsync(DateTime month)
     {
-        await RefreshDashboardAsync();
-    }
-
-    private async Task RefreshDashboardAsync()
-    {
-        if (_refreshing)
+        await _store.SelectMonthAsync(month);
+        Payment[] payments = _store.Payments.ToArray();
+        var unpaid = payments.Where(p => !p.IsPaid).ToArray();
+        var paid = payments.Where(p => p.IsPaid).ToArray();
+        var overdue = unpaid.Where(p => p.DueDate.Date < DateTime.Today).ToArray();
+        _month.Text = _store.SelectedMonth.ToString("MMMM yyyy");
+        _total.Text = LessonUi.Money(payments.Sum(p => p.Amount));
+        _paid.Text = LessonUi.Money(paid.Sum(p => p.Amount));
+        _remaining.Text = LessonUi.Money(unpaid.Sum(p => p.Amount));
+        _overdue.Text = LessonUi.Money(overdue.Sum(p => p.Amount));
+        _count.Text = $"{payments.Length} payments: {paid.Length} paid, {unpaid.Length} unpaid, {overdue.Length} overdue.";
+        _preview.Children.Clear();
+        if (unpaid.Length == 0) _preview.Children.Add(LessonUi.Text("No unpaid payments in this month."));
+        foreach (var payment in unpaid.OrderBy(p => p.DueDate).ThenBy(p => p.Name).Take(5))
         {
-            return;
+            _preview.Children.Add(LessonUi.Card(new VerticalStackLayout
+            {
+                Spacing = 6, Children =
+                {
+                    LessonUi.Heading(payment.Name), LessonUi.Text(payment.AmountText),
+                    LessonUi.Text(payment.DueText), LessonUi.Text(payment.KindText)
+                }
+            }));
         }
-
-        SetRefreshing(true);
-        ErrorLabel.IsVisible = false;
-
-        try
-        {
-            // Load from SQLite, including when Dashboard is the first tab.
-            await _store.LoadAsync();
-
-            // Use one snapshot for all calculations.
-            Payment[] payments = _store.Payments.ToArray();
-
-            DateTime today = DateTime.Today;
-
-            Payment[] paidPayments = payments
-                .Where(payment => payment.IsPaid)
-                .ToArray();
-
-            Payment[] unpaidPayments = payments
-                .Where(payment => !payment.IsPaid)
-                .ToArray();
-
-            Payment[] overduePayments = unpaidPayments
-                .Where(payment => payment.DueDate.Date < today)
-                .ToArray();
-
-            Payment[] nextPayments = unpaidPayments
-                .OrderBy(payment => payment.DueDate)
-                .ThenBy(payment => payment.Name)
-                .Take(5)
-                .ToArray();
-
-            decimal total = payments.Sum(payment => payment.Amount);
-            decimal paid = paidPayments.Sum(payment => payment.Amount);
-            decimal remaining = unpaidPayments.Sum(payment => payment.Amount);
-            decimal overdue = overduePayments.Sum(payment => payment.Amount);
-
-            TotalLabel.Text = FormatMoney(total);
-            PaidLabel.Text = FormatMoney(paid);
-            RemainingLabel.Text = FormatMoney(remaining);
-            OverdueLabel.Text = FormatMoney(overdue);
-
-            PaymentCountLabel.Text = CountText(
-                payments.Length, "payment");
-
-            PaidCountLabel.Text = CountText(
-                paidPayments.Length, "paid payment");
-
-            UnpaidCountLabel.Text = CountText(
-                unpaidPayments.Length, "unpaid payment");
-
-            OverdueCountLabel.Text = CountText(
-                overduePayments.Length, "overdue payment");
-
-            BindableLayout.SetItemsSource(
-                UpcomingPaymentsLayout,
-                nextPayments);
-
-            EmptyPaymentsLabel.IsVisible = nextPayments.Length == 0;
-
-            UpdatedLabel.Text =
-                $"Last refreshed: {DateTime.Now:dd MMM yyyy HH:mm}";
-
-            _hasLoaded = true;
-        }
-        catch (Exception ex)
-        {
-            Debug.WriteLine(ex);
-
-            ErrorLabel.Text = _hasLoaded
-                ? "Could not refresh. The figures below are from the " +
-                  "last successful refresh. Tap Refresh dashboard to retry."
-                : "Could not load payments. Tap Refresh dashboard to retry.";
-
-            ErrorLabel.IsVisible = true;
-        }
-        finally
-        {
-            SetRefreshing(false);
-        }
-    }
-
-    private void SetRefreshing(bool refreshing)
-    {
-        _refreshing = refreshing;
-
-        RefreshButton.IsEnabled = !refreshing;
-        LoadingIndicator.IsVisible = refreshing;
-        LoadingIndicator.IsRunning = refreshing;
-    }
-
-    private static string FormatMoney(decimal amount)
-    {
-        return amount.ToString("C2", Pounds);
-    }
-
-    private static string CountText(int count, string singular)
-    {
-        return count == 1
-            ? $"1 {singular}"
-            : $"{count} {singular}s";
+        _updated.Text = $"Last refreshed: {DateTime.Now:dd MMM yyyy HH:mm}";
     }
 }
