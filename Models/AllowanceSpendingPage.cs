@@ -28,7 +28,7 @@ public sealed class AllowanceSpendingPage : ContentPage
     {
         _month = PaymentStore.MonthOf(month);
         Title = $"Spending — {_month:MMM yyyy}";
-        _add = LessonUi.Button("Add spending", () => { OpenEditor(null); return Task.CompletedTask; });
+        _add = LessonUi.Button("Add spending", () => { OpenEditor(null); return Task.CompletedTask; }, LessonUi.ButtonTone.Primary);
         _add.IsEnabled = false;
         _toolbar.Children.Add(LessonUi.Text(
             "Record paid discretionary purchases here. Do not also record the same purchase as a bill in Task Reminders."));
@@ -49,7 +49,7 @@ public sealed class AllowanceSpendingPage : ContentPage
         };
         grid.Add(_toolbar, 0, 0); grid.Add(_error, 0, 1);
         grid.Add(_listScroll, 0, 2); grid.Add(_formScroll, 0, 2);
-        Content = grid;
+        Content = LessonUi.Constrain(grid);
     }
 
     protected override async void OnAppearing()
@@ -62,6 +62,8 @@ public sealed class AllowanceSpendingPage : ContentPage
     {
         var expenses = await _store.GetExpensesAsync(_month);
         _rows.Children.Clear();
+        _rows.Children.Add(LessonUi.Header("YOUR ALLOWANCE", "The little things add up",
+            "Record everyday purchases and keep your spending in view."));
         _add.IsEnabled = _month <= PaymentStore.MonthOf(DateTime.Today);
         if (!_add.IsEnabled) _rows.Children.Add(LessonUi.Text("Actual spending can be entered when this month arrives."));
         if (expenses.Count == 0) _rows.Children.Add(LessonUi.Text("No allowance spending recorded in this month."));
@@ -71,15 +73,16 @@ public sealed class AllowanceSpendingPage : ContentPage
             stack.Children.Add(LessonUi.Heading(expense.Description));
             stack.Children.Add(LessonUi.Text(expense.AmountText));
             stack.Children.Add(LessonUi.Text(expense.DateText));
-            stack.Children.Add(LessonUi.Button("Edit", () => { OpenEditor(expense); return Task.CompletedTask; }));
-            stack.Children.Add(LessonUi.Button("Delete", () => LessonUi.RunAsync(this, async () =>
+            var edit = LessonUi.Button("Edit", () => { OpenEditor(expense); return Task.CompletedTask; });
+            var delete = LessonUi.Button("Delete", () => LessonUi.RunAsync(this, async () =>
             {
                 if (await DisplayAlertAsync("Delete spending?", $"Delete {expense.Description}?", "Delete", "Cancel"))
                 {
                     await _store.DeleteExpenseAsync(expense);
                     await LoadAsync();
                 }
-            }, _error)));
+            }, _error), LessonUi.ButtonTone.Danger);
+            stack.Children.Add(LessonUi.Actions(edit, delete));
             _rows.Children.Add(LessonUi.Card(stack));
         }
     }
@@ -101,7 +104,7 @@ public sealed class AllowanceSpendingPage : ContentPage
         _form.Children.Add(LessonUi.Text("Description")); _form.Children.Add(_description);
         _form.Children.Add(LessonUi.Text("Amount (£), using a decimal point")); _form.Children.Add(_amount);
         _form.Children.Add(LessonUi.Text("Date spent")); _form.Children.Add(_date);
-        _form.Children.Add(LessonUi.Button("Save spending", () => LessonUi.RunAsync(this, SaveAsync, _error)));
+        _form.Children.Add(LessonUi.Button("Save spending", () => LessonUi.RunAsync(this, SaveAsync, _error), LessonUi.ButtonTone.Primary));
         _form.Children.Add(LessonUi.Button("Cancel", () => { CloseEditor(); return Task.CompletedTask; }));
         _toolbar.IsVisible = false; _listScroll.IsVisible = false; _formScroll.IsVisible = true;
     }

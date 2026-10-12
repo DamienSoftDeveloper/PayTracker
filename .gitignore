@@ -1,0 +1,5 @@
+# Local builds and IDE state. Existing tracked output is not removed by this rule.
+bin/
+obj/
+.vs/
+*.user

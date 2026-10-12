@@ -5,28 +5,31 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:pages="clr-namespace:PayTracker.Pages"
     x:Class="PayTracker.AppShell"
-    Shell.FlyoutBehavior="Disabled"
-    Shell.TabBarForegroundColor="#6366F1">
+    Shell.FlyoutBehavior="Disabled">
 
     <TabBar>
 
         <ShellContent
             Title="Dashboard"
+            Icon="{AppThemeBinding Light=dashboard_tab.png, Dark=dashboard_tab_dark.png}"
             Route="dashboard"
             ContentTemplate="{DataTemplate pages:DashboardPage}" />
 
         <ShellContent
             Title="Track Payments"
+            Icon="{AppThemeBinding Light=payments_tab.png, Dark=payments_tab_dark.png}"
             Route="payments"
             ContentTemplate="{DataTemplate pages:TaskReminderPage}" />
 
         <ShellContent
             Title="Income"
+            Icon="{AppThemeBinding Light=income_tab.png, Dark=income_tab_dark.png}"
             Route="income"
             ContentTemplate="{DataTemplate pages:IncomePage}" />
 
         <ShellContent
             Title="Statistics"
+            Icon="{AppThemeBinding Light=statistics_tab.png, Dark=statistics_tab_dark.png}"
             Route="statistics"
             ContentTemplate="{DataTemplate pages:StatisticsPage}" />
 

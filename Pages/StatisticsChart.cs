@@ -20,7 +20,9 @@ public sealed class StatisticsChart : IDrawable
         canvas.SaveState();
         try
         {
-            canvas.FillColor = Colors.White;
+            bool dark = Application.Current?.RequestedTheme == AppTheme.Dark;
+            Color textColor = dark ? LessonUi.InkDark : LessonUi.Muted;
+            canvas.FillColor = dark ? Color.FromArgb("#1A2638") : Colors.White;
             canvas.FillRectangle(dirtyRect);
             if (Months.Count == 0 || dirtyRect.Width < 100 || dirtyRect.Height < 100) return;
             const float left = 55, right = 10, top = 24, bottom = 48;
@@ -33,9 +35,9 @@ public sealed class StatisticsChart : IDrawable
             if (maximum == minimum) maximum = minimum + 1;
             float Y(decimal value) => top + (float)((maximum - value) / (maximum - minimum)) * height;
             float zero = Y(0);
-            canvas.FontColor = Colors.Black;
-            canvas.FontSize = 10;
-            canvas.StrokeColor = Colors.LightGray;
+            canvas.FontColor = textColor;
+            canvas.FontSize = 11;
+            canvas.StrokeColor = dark ? Color.FromArgb("#34445A") : Color.FromArgb("#DFE7EF");
             canvas.StrokeSize = 1;
             foreach (decimal tick in new[] { maximum, 0, minimum }.Distinct())
             {
@@ -61,9 +63,9 @@ public sealed class StatisticsChart : IDrawable
                 {
                     float paidY = Y(month.BillsPaidByDate);
                     float totalY = Y(month.RecordedOutflow);
-                    canvas.FillColor = Colors.RoyalBlue;
+                    canvas.FillColor = dark ? Color.FromArgb("#93B4FF") : Color.FromArgb("#4767B1");
                     canvas.FillRectangle(x, paidY, bar, Math.Max(0, zero - paidY));
-                    canvas.FillColor = Colors.MediumPurple;
+                    canvas.FillColor = dark ? Color.FromArgb("#C4B5FD") : Color.FromArgb("#8572BC");
                     canvas.FillRectangle(x, totalY, bar, Math.Max(0, paidY - totalY));
                     if (month.RecordedOutflow == 0) ZeroMarker(canvas, x, zero, bar);
                 }
@@ -71,11 +73,12 @@ public sealed class StatisticsChart : IDrawable
                 {
                     decimal value = month.ProjectedMonthlySurplus!.Value;
                     float y = Y(value);
-                    canvas.FillColor = value < 0 ? Colors.OrangeRed : Colors.SeaGreen;
+                    canvas.FillColor = value < 0 ? (dark ? Color.FromArgb("#FDA4AF") : Color.FromArgb("#B42335")) :
+                        (dark ? LessonUi.AccentDark : LessonUi.Accent);
                     canvas.FillRectangle(x, Math.Min(y, zero), bar, Math.Abs(y - zero));
                     if (value == 0) ZeroMarker(canvas, x, zero, bar);
                 }
-                canvas.FontColor = Colors.Black;
+                canvas.FontColor = textColor;
                 canvas.DrawString(month.Month.ToString("MMM", CultureInfo.GetCultureInfo("en-GB")),
                     left + cell * i, top + height + 8, cell, 16,
                     HorizontalAlignment.Center, VerticalAlignment.Center);

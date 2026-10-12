@@ -31,7 +31,7 @@ public sealed class RecurringPaymentsPage : ContentPage
         _toolbar.Children.Add(LessonUi.Button("Add recurring schedule", () =>
         {
             OpenEditor(null); return Task.CompletedTask;
-        }));
+        }, LessonUi.ButtonTone.Primary));
         _toolbar.Children.Add(LessonUi.Button("Refresh", () => LessonUi.RunAsync(this, LoadAsync, _error)));
         _listScroll = new ScrollView { Content = _rows };
         _formScroll = new ScrollView { Content = _form, IsVisible = false };
@@ -47,7 +47,7 @@ public sealed class RecurringPaymentsPage : ContentPage
         };
         grid.Add(_toolbar, 0, 0); grid.Add(_error, 0, 1);
         grid.Add(_listScroll, 0, 2); grid.Add(_formScroll, 0, 2);
-        Content = grid;
+        Content = LessonUi.Constrain(grid);
     }
 
     protected override async void OnAppearing()
@@ -60,6 +60,8 @@ public sealed class RecurringPaymentsPage : ContentPage
     {
         var schedules = await _store.GetSchedulesAsync();
         _rows.Children.Clear();
+        _rows.Children.Add(LessonUi.Header("MONTHLY COMMITMENTS", "Your recurring schedules",
+            "Set it up once. Keep each month's payment status separate."));
         _rows.Children.Add(LessonUi.Text(
             "Opening a month creates its missing records. Existing records keep their names, " +
             "amounts, due dates and paid status when a schedule changes."));
@@ -100,7 +102,7 @@ public sealed class RecurringPaymentsPage : ContentPage
         _form.Children.Add(LessonUi.Text("Active: generate missing monthly records")); _form.Children.Add(_active);
         _form.Children.Add(LessonUi.Text(
             "Changes apply to records that have not been created yet. Records already created stay unchanged."));
-        _form.Children.Add(LessonUi.Button("Save schedule", () => LessonUi.RunAsync(this, SaveAsync, _error)));
+        _form.Children.Add(LessonUi.Button("Save schedule", () => LessonUi.RunAsync(this, SaveAsync, _error), LessonUi.ButtonTone.Primary));
         _form.Children.Add(LessonUi.Button("Cancel", () => { CloseEditor(); return Task.CompletedTask; }));
         _toolbar.IsVisible = false; _listScroll.IsVisible = false; _formScroll.IsVisible = true;
     }

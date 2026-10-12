@@ -29,27 +29,31 @@ public partial class TaskReminderPage : ContentPage
     public TaskReminderPage()
     {
         InitializeComponent();
-        _add = LessonUi.Button("Add one-off payment", () =>
+        _add = LessonUi.Button("Add payment", () =>
         {
             if (_loaded) OpenEditor(null, false);
             return Task.CompletedTask;
-        });
+        }, LessonUi.ButtonTone.Primary);
         _add.IsEnabled = false;
+        _toolbar.Children.Add(LessonUi.Header("PayTracker / Payments", "Stay ahead of your bills",
+            "Track due dates, recurring payments and the things you've already paid."));
         _toolbar.Children.Add(LessonUi.MonthBar(this, _store, SelectMonthAsync, _month, _error));
-        _toolbar.Children.Add(_add);
-        _toolbar.Children.Add(LessonUi.Button("Recurring schedules", () => LessonUi.RunAsync(this,
-            () => Navigation.PushAsync(new RecurringPaymentsPage()), _error)));
-        _toolbar.Children.Add(LessonUi.Button("Refresh", () => LessonUi.RunAsync(this,
-            () => SelectMonthAsync(_store.SelectedMonth), _error)));
+        var schedules = LessonUi.Button("Recurring schedules", () => LessonUi.RunAsync(this,
+            () => Navigation.PushAsync(new RecurringPaymentsPage()), _error));
+        var refresh = LessonUi.Button("Refresh", () => LessonUi.RunAsync(this,
+            () => SelectMonthAsync(_store.SelectedMonth), _error));
+        _toolbar.Children.Add(LessonUi.Actions(_add, refresh));
+        _toolbar.Children.Add(schedules);
 
         _list.ItemsSource = _store.Payments;
-        _list.EmptyView = "No payments in this month.";
+        _list.EmptyView = LessonUi.Card(LessonUi.Header("ALL CLEAR", "No payments yet",
+            "Add a one-off payment or set up a recurring schedule for this month."));
         _list.ItemTemplate = new DataTemplate(CreatePaymentCard);
         _editor = new ScrollView { Content = _form, IsVisible = false };
 
         var grid = new Grid
         {
-            Padding = 16, RowSpacing = 10,
+            Padding = 22, RowSpacing = 14,
             RowDefinitions =
             {
                 new RowDefinition { Height = GridLength.Auto },
@@ -61,7 +65,7 @@ public partial class TaskReminderPage : ContentPage
         grid.Add(_error, 0, 1);
         grid.Add(_list, 0, 2);
         grid.Add(_editor, 0, 2);
-        Content = grid;
+        Content = LessonUi.Constrain(grid);
     }
 
     protected override async void OnAppearing()
@@ -90,41 +94,52 @@ public partial class TaskReminderPage : ContentPage
         trigger.Setters.Add(new Setter { Property = Label.TextDecorationsProperty, Value = TextDecorations.Strikethrough });
         name.Triggers.Add(trigger);
         var stack = new VerticalStackLayout { Spacing = 6 };
-        stack.Children.Add(name);
-        foreach (string property in new[] { nameof(Payment.AmountText), nameof(Payment.DueText),
+        var amount = LessonUi.Metric("");
+        amount.FontSize = 24; amount.MaximumWidthRequest = 160;
+        amount.HorizontalTextAlignment = TextAlignment.End;
+        amount.SetBinding(Label.TextProperty, nameof(Payment.AmountText));
+        var heading = new Grid { ColumnSpacing = 10, ColumnDefinitions =
+            { new ColumnDefinition(), new ColumnDefinition { Width = GridLength.Auto } } };
+        heading.Add(name, 0, 0); heading.Add(amount, 1, 0);
+        stack.Children.Add(heading);
+        foreach (string property in new[] { nameof(Payment.DueText),
             nameof(Payment.StatusText), nameof(Payment.KindText) })
         {
             var label = LessonUi.Text("");
             label.SetBinding(Label.TextProperty, property);
             stack.Children.Add(label);
         }
-        stack.Children.Add(PaymentButton("Edit this payment", p =>
+        var edit = PaymentButton("Edit", p =>
         {
             OpenEditor(p, false); return Task.CompletedTask;
-        }));
-        stack.Children.Add(PaymentButton("Record / change paid date", p =>
+        });
+        var record = PaymentButton("Paid date", p =>
         {
             OpenEditor(p, true); return Task.CompletedTask;
-        }));
+        });
+        LessonUi.StyleButton(record, LessonUi.ButtonTone.Primary);
+        stack.Children.Add(LessonUi.Actions(edit, record));
         var unpaid = PaymentButton("Mark unpaid", async p =>
         {
             if (await DisplayAlertAsync("Mark unpaid?", "Clear this month's paid date?", "Clear", "Cancel"))
                 await _store.UpdateAsync(p with { PaidDate = null });
         });
         unpaid.SetBinding(IsVisibleProperty, nameof(Payment.IsPaid));
-        stack.Children.Add(unpaid);
-        stack.Children.Add(PaymentButton("Delete this payment", async p =>
+        var delete = PaymentButton("Delete", async p =>
         {
             if (await DisplayAlertAsync("Delete payment?",
                 "Delete this month's record? Other months and its recurring schedule are kept.", "Delete", "Cancel"))
                 await _store.DeleteAsync(p);
-        }));
+        });
+        LessonUi.StyleButton(delete, LessonUi.ButtonTone.Danger);
+        stack.Children.Add(LessonUi.Actions(unpaid, delete));
         return LessonUi.Card(stack);
     }
 
     private Button PaymentButton(string text, Func<Payment, Task> action)
     {
         var button = new Button { Text = text };
+        LessonUi.StyleButton(button);
         button.SetBinding(Button.CommandParameterProperty, ".");
         button.Clicked += async (_, _) =>
         {
@@ -166,7 +181,7 @@ public partial class TaskReminderPage : ContentPage
             if (payment?.IsRecurring == true)
                 _form.Children.Add(LessonUi.Text("This edit affects only this month's record. Change future defaults in Recurring schedules."));
         }
-        _form.Children.Add(LessonUi.Button("Save", () => LessonUi.RunAsync(this, SaveAsync, _error)));
+        _form.Children.Add(LessonUi.Button("Save payment", () => LessonUi.RunAsync(this, SaveAsync, _error), LessonUi.ButtonTone.Primary));
         _form.Children.Add(LessonUi.Button("Cancel", () => { CloseEditor(); return Task.CompletedTask; }));
         _toolbar.IsVisible = false;
         _list.IsVisible = false;

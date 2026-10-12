@@ -25,22 +25,14 @@ public partial class DashboardPage : ContentPage
     public DashboardPage()
     {
         InitializeComponent();
-        var cards = new Grid
-        {
-            ColumnSpacing = 12, RowSpacing = 8,
-            ColumnDefinitions = { new ColumnDefinition(), new ColumnDefinition() },
-            RowDefinitions =
-            {
-                new RowDefinition { Height = GridLength.Auto },
-                new RowDefinition { Height = GridLength.Auto }
-            }
-        };
-        cards.Add(SummaryCard("Scheduled for month", _total), 0, 0);
-        cards.Add(SummaryCard("Paid for month", _paid), 1, 0);
-        cards.Add(SummaryCard("Remaining", _remaining), 0, 1);
-        cards.Add(SummaryCard("Overdue as of today", _overdue), 1, 1);
+        var cards = LessonUi.Cards();
+        LessonUi.AddCard(cards, LessonUi.MetricCard("Scheduled this month", _total));
+        LessonUi.AddCard(cards, LessonUi.MetricCard("Already paid", _paid, Color.FromArgb("#0F766E")));
+        LessonUi.AddCard(cards, LessonUi.MetricCard("Still to pay", _remaining, Color.FromArgb("#4767B1")));
+        LessonUi.AddCard(cards, LessonUi.MetricCard("Overdue today", _overdue, Color.FromArgb("#B42335")));
         var body = new VerticalStackLayout { Padding = 20, Spacing = 14 };
-        body.Children.Add(LessonUi.Heading("Welcome to PayTracker"));
+        body.Children.Add(LessonUi.Header("PayTracker / Overview", "Your month, at a glance",
+            "A clearer view of your commitments and what comes next."));
         body.Children.Add(LessonUi.MonthBar(this, _store, SelectMonthAsync, _month, _error));
         body.Children.Add(LessonUi.Button("Refresh dashboard", () => LessonUi.RunAsync(this,
             () => SelectMonthAsync(_store.SelectedMonth), _error)));
@@ -50,11 +42,8 @@ public partial class DashboardPage : ContentPage
         body.Children.Add(LessonUi.Heading("Next unpaid payments"));
         body.Children.Add(LessonUi.Text("Up to five in this month, earliest due first. Includes overdue payments."));
         body.Children.Add(_preview); body.Children.Add(_updated);
-        Content = new ScrollView { Content = body };
+        Content = LessonUi.Scroll(body);
     }
-
-    private static Border SummaryCard(string title, Label value) => LessonUi.Card(
-        new VerticalStackLayout { Spacing = 8, Children = { LessonUi.Text(title), value } });
 
     protected override async void OnAppearing()
     {

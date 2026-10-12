@@ -17,7 +17,7 @@ public partial class StatisticsPage : ContentPage
     private readonly Label _comparison = LessonUi.Text("");
     private readonly Label _periodNote = LessonUi.Text("");
     private readonly Label _updated = LessonUi.Text("");
-    private readonly VerticalStackLayout _figures = new() { Spacing = 6 };
+    private readonly Grid _figures = LessonUi.Cards();
     private readonly VerticalStackLayout _history = new() { Spacing = 8 };
     private readonly StatisticsChart _outflowDrawing = new() { Kind = StatisticsChartKind.RecordedOutflow };
     private readonly StatisticsChart _surplusDrawing = new() { Kind = StatisticsChartKind.ProjectedSurplus };
@@ -32,43 +32,50 @@ public partial class StatisticsPage : ContentPage
         _selectedMonth = PaymentStore.Instance.SelectedMonth;
         _outflowChart = new GraphicsView { Drawable = _outflowDrawing, HeightRequest = 240 };
         _surplusChart = new GraphicsView { Drawable = _surplusDrawing, HeightRequest = 240 };
-        var buttons = new HorizontalStackLayout
-        {
-            Spacing = 8,
-            Children =
-            {
+        var buttons = LessonUi.Actions(
                 LessonUi.Button("Previous", () => RunLoadAsync(() => _selectedMonth.AddMonths(-1))),
-                LessonUi.Button("This month", () => RunLoadAsync(() => DateTime.Today)),
-                LessonUi.Button("Next", () => RunLoadAsync(() => _selectedMonth.AddMonths(1)))
-            }
-        };
+                LessonUi.Button("Current", () => RunLoadAsync(() => DateTime.Today)),
+                LessonUi.Button("Next", () => RunLoadAsync(() => _selectedMonth.AddMonths(1))));
         _data.Children.Add(_periodNote);
         _data.Children.Add(_figures);
         _data.Children.Add(_comparison);
         _data.Children.Add(LessonUi.Heading("Recorded spending by payment date"));
         _data.Children.Add(LessonUi.Text("Blue: bills marked paid. Purple: allowance purchases. Exact values are listed below."));
-        _data.Children.Add(_outflowChart);
+        _data.Children.Add(LessonUi.Card(_outflowChart));
         _data.Children.Add(LessonUi.Heading("Projected monthly surplus / shortfall"));
         _data.Children.Add(LessonUi.Text("Green: surplus. Red: shortfall. A dash means income inputs have not been saved. This is a plan, not confirmed savings."));
-        _data.Children.Add(_surplusChart);
+        _data.Children.Add(LessonUi.Card(_surplusChart));
         _data.Children.Add(LessonUi.Heading("Monthly figures"));
         _data.Children.Add(_history);
         _data.Children.Add(_updated);
         var body = new VerticalStackLayout { Padding = 20, Spacing = 14 };
-        body.Children.Add(LessonUi.Heading("Statistics")); body.Children.Add(_month);
+        body.Children.Add(LessonUi.Header("PayTracker / Insights", "See the bigger picture",
+            "Explore your spending patterns and the plans behind them.")); body.Children.Add(_month);
         body.Children.Add(buttons);
         body.Children.Add(LessonUi.Button("Refresh statistics", () => RunLoadAsync(() => _selectedMonth)));
         body.Children.Add(_error); body.Children.Add(_data);
         body.Children.Add(LessonUi.Text(
             "Recorded spending is based on paid dates and saved purchases. It is not a complete bank statement. " +
             "Scheduled bill totals belong to their due month. Editing or deleting records revises these statistics."));
-        Content = new ScrollView { Content = body };
+        Content = LessonUi.Scroll(body);
     }
 
     protected override async void OnAppearing()
     {
         base.OnAppearing();
+        if (Application.Current is not null) Application.Current.RequestedThemeChanged += OnThemeChanged;
         await RunLoadAsync(() => PaymentStore.Instance.SelectedMonth);
+    }
+
+    protected override void OnDisappearing()
+    {
+        if (Application.Current is not null) Application.Current.RequestedThemeChanged -= OnThemeChanged;
+        base.OnDisappearing();
+    }
+
+    private void OnThemeChanged(object? sender, AppThemeChangedEventArgs e)
+    {
+        _outflowChart.Invalidate(); _surplusChart.Invalidate();
     }
 
     private Task RunLoadAsync(Func<DateTime> month) => LessonUi.RunAsync(this, async () =>
@@ -95,7 +102,7 @@ public partial class StatisticsPage : ContentPage
             _periodNote.Text += " No bill records are saved for this month; its full bill plan may be incomplete.";
         _figures.Children.Clear();
         if (!selected.HasAnyData)
-            _figures.Children.Add(LessonUi.Text("No saved records for the selected month."));
+            LessonUi.AddCard(_figures, LessonUi.Card(LessonUi.Text("No saved records for the selected month.")));
         else
         {
             Figure("Recorded spending by payment date", selected.RecordedOutflow);
@@ -136,6 +143,7 @@ public partial class StatisticsPage : ContentPage
     }
 
     private static string MoneyOrMissing(decimal? amount) => amount is decimal value ? LessonUi.Money(value) : "Not entered";
-    private void Figure(string title, decimal? amount) => _figures.Children.Add(LessonUi.Card(
-        new VerticalStackLayout { Spacing = 4, Children = { LessonUi.Text(title), LessonUi.Heading(MoneyOrMissing(amount)) } }));
+    private void Figure(string title, decimal? amount) => LessonUi.AddCard(_figures,
+        LessonUi.MetricCard(title, LessonUi.Metric(MoneyOrMissing(amount)),
+            amount < 0 ? Color.FromArgb("#B42335") : null));
 }

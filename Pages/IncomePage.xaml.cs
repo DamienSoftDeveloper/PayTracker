@@ -27,6 +27,7 @@ public partial class IncomePage : ContentPage
     private readonly VerticalStackLayout _currentFields = new() { Spacing = 8, IsVisible = false };
     private readonly VerticalStackLayout _settings = new() { Spacing = 10, IsEnabled = false };
     private readonly VerticalStackLayout _results = new() { Spacing = 8, IsVisible = false };
+    private readonly Grid _resultCards = LessonUi.Cards();
     private readonly Label _resultNote = LessonUi.Text("Enter the month's inputs, then select Calculate.");
     private readonly Label _spendingSummary = LessonUi.Text("");
     private readonly Label _savedNote = LessonUi.Text("");
@@ -74,20 +75,23 @@ public partial class IncomePage : ContentPage
         _currentFields.Children.Add(confirmationRow);
 
         _settings.Children.Add(LessonUi.Text("Calculation mode")); _settings.Children.Add(_mode);
-        _settings.Children.Add(_balanceLabel); _settings.Children.Add(_balance);
-        _settings.Children.Add(LessonUi.Text("Expected take-home income for the whole month (£)")); _settings.Children.Add(_income);
-        _settings.Children.Add(LessonUi.Text("Allowance budget (£)")); _settings.Children.Add(_allowance);
-        _settings.Children.Add(LessonUi.Text("Savings target to reserve from the closing balance (£)")); _settings.Children.Add(_savings);
+        var inputs = LessonUi.Cards();
+        LessonUi.AddCard(inputs, LessonUi.Card(new VerticalStackLayout { Spacing = 8, Children = { _balanceLabel, _balance } }));
+        LessonUi.AddCard(inputs, InputCard("Expected take-home income (£)", _income));
+        LessonUi.AddCard(inputs, InputCard("Allowance budget (£)", _allowance));
+        LessonUi.AddCard(inputs, InputCard("Savings target (£)", _savings));
+        _settings.Children.Add(inputs);
         _settings.Children.Add(_currentFields);
         _settings.Children.Add(LessonUi.Text(
             "Monthly plan: use the balance at the start of the month, before that month's income and spending. " +
             "All bills and allowance spending must be recorded once. Values use a decimal point; zero is allowed."));
-        _settings.Children.Add(LessonUi.Button("Calculate", () => LessonUi.RunAsync(this, CalculateAsync, _error)));
+        _settings.Children.Add(LessonUi.Button("Calculate budget", () => LessonUi.RunAsync(this, CalculateAsync, _error), LessonUi.ButtonTone.Primary));
         _settings.Children.Add(LessonUi.Button("Allowance spending", () => LessonUi.RunAsync(this,
             () => Navigation.PushAsync(new AllowanceSpendingPage(_loadedMonth)), _error)));
 
         var body = new VerticalStackLayout { Padding = 20, Spacing = 14 };
-        body.Children.Add(LessonUi.Heading("Income and monthly budget"));
+        body.Children.Add(LessonUi.Header("PayTracker / Budget", "Make a plan for your money",
+            "Bring your income, allowance and savings goals into one monthly view."));
         body.Children.Add(LessonUi.MonthBar(this, _payments, LoadMonthAsync, _month, _error));
         body.Children.Add(LessonUi.Button("Refresh saved inputs", () => LessonUi.RunAsync(this,
             () => LoadMonthAsync(_payments.SelectedMonth, forceReload: true), _error)));
@@ -97,8 +101,11 @@ public partial class IncomePage : ContentPage
         body.Children.Add(LessonUi.Text(
             "These are estimates from your entries, not a live bank balance. A positive closing balance " +
             "does not guarantee cash is available before each bill's due date."));
-        Content = new ScrollView { Content = body };
+        Content = LessonUi.Scroll(body);
     }
+
+    private static Border InputCard(string title, View field) => LessonUi.Card(
+        new VerticalStackLayout { Spacing = 8, Children = { LessonUi.Text(title), field } });
 
     private static Entry MoneyEntry(string placeholder) => new() { Placeholder = placeholder, Keyboard = Keyboard.Numeric };
 
@@ -210,6 +217,9 @@ public partial class IncomePage : ContentPage
     private void Render(BudgetResult r)
     {
         _results.Children.Clear();
+        _resultCards.Children.Clear();
+        _results.Children.Add(LessonUi.Heading("Your budget outlook"));
+        _results.Children.Add(_resultCards);
         AddFigure("All bills scheduled for this month", r.ScheduledBills);
         AddFigure("Bills marked paid", r.PaidBills);
         AddFigure("Bills still unpaid", r.UnpaidBills);
@@ -232,6 +242,7 @@ public partial class IncomePage : ContentPage
         _results.IsVisible = true;
     }
 
-    private void AddFigure(string title, decimal amount) => _results.Children.Add(LessonUi.Card(
-        new VerticalStackLayout { Spacing = 4, Children = { LessonUi.Text(title), LessonUi.Heading(LessonUi.Money(amount)) } }));
+    private void AddFigure(string title, decimal amount) => LessonUi.AddCard(_resultCards,
+        LessonUi.MetricCard(title, LessonUi.Metric(LessonUi.Money(amount)),
+            amount < 0 ? Color.FromArgb("#B42335") : null));
 }
