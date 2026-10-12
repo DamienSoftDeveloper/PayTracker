@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="PayTracker.Pages.DashboardPage"
+             Title="Dashboard">
+    <VerticalStackLayout Padding="20" Spacing="18">
+
+        <Label
+                Text="Welcome to PayTracker"
+                FontSize="28"
+                FontAttributes="Bold" />
+
+        <Label
+                Text="Your monthly financial overview."
+                FontSize="15"
+                TextColor="Gray" />
+
+        <!-- Summary cards -->
+        <Grid ColumnDefinitions="*,*"
+                  ColumnSpacing="12">
+
+            <Border
+                    Grid.Column="0"
+                    Padding="16"
+                    Stroke="#CBD5E1"
+                    StrokeShape="RoundRectangle 12">
+
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Payments"
+                               FontSize="14" />
+                    <Label Text="--"
+                               FontSize="26"
+                               FontAttributes="Bold" />
+                    <Label Text="Not configured"
+                               FontSize="11"
+                               TextColor="Gray" />
+                </VerticalStackLayout>
+            </Border>
+
+            <Border
+                    Grid.Column="1"
+                    Padding="16"
+                    Stroke="#CBD5E1"
+                    StrokeShape="RoundRectangle 12">
+
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Allowance"
+                               FontSize="14" />
+                    <Label Text="--"
+                               FontSize="26"
+                               FontAttributes="Bold" />
+                    <Label Text="Not configured"
+                               FontSize="11"
+                               TextColor="Gray" />
+                </VerticalStackLayout>
+            </Border>
+
+        </Grid>
+
+        <!-- Payment summary -->
+        <Label
+                Text="Upcoming Payments"
+                FontSize="22"
+                FontAttributes="Bold"
+                Margin="0,12,0,0" />
+
+        <Border
+                Padding="20"
+                Stroke="#CBD5E1"
+                StrokeShape="RoundRectangle 12">
+
+            <Label
+                    Text="No payments to display yet."
+                    HorizontalTextAlignment="Center"
+                    TextColor="Gray" />
+        </Border>
+
+    </VerticalStackLayout>
+</ContentPage>
