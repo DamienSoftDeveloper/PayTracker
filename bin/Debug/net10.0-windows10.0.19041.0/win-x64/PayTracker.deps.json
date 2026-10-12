@@ -11,6 +11,7 @@
         "dependencies": {
           "Microsoft.Extensions.Logging.Debug": "10.0.0",
           "Microsoft.Maui.Controls": "10.0.20",
+          "sqlite-net-pcl": "1.11.285",
           "Microsoft.Web.WebView2.Core.Projection": "1.0.3179.45",
           "runtimepack.Microsoft.Windows.SDK.NET.Ref": "10.0.19041.57"
         },
@@ -509,6 +510,45 @@
           }
         }
       },
+      "SourceGear.sqlite3/3.53.3": {
+        "native": {
+          "runtimes/win-x64/native/e_sqlite3.dll": {
+            "fileVersion": "3.53.3.0"
+          }
+        }
+      },
+      "sqlite-net-pcl/1.11.285": {
+        "dependencies": {
+          "SQLitePCLRaw.core": "3.0.3",
+          "SQLitePCLRaw.provider.e_sqlite3": "3.0.3",
+          "SourceGear.sqlite3": "3.53.3"
+        },
+        "runtime": {
+          "lib/net8.0/SQLite-net.dll": {
+            "assemblyVersion": "1.11.285.0",
+            "fileVersion": "1.11.285.0"
+          }
+        }
+      },
+      "SQLitePCLRaw.core/3.0.3": {
+        "runtime": {
+          "lib/net8.0/SQLitePCLRaw.core.dll": {
+            "assemblyVersion": "3.0.3.3048",
+            "fileVersion": "3.0.3.3048"
+          }
+        }
+      },
+      "SQLitePCLRaw.provider.e_sqlite3/3.0.3": {
+        "dependencies": {
+          "SQLitePCLRaw.core": "3.0.3"
+        },
+        "runtime": {
+          "lib/net8.0-windows7.0/SQLitePCLRaw.provider.e_sqlite3.dll": {
+            "assemblyVersion": "3.0.3.3048",
+            "fileVersion": "3.0.3.3048"
+          }
+        }
+      },
       "Microsoft.Web.WebView2.Core.Projection/1.0.3179.45": {
         "runtime": {
           "Microsoft.Web.WebView2.Core.Projection.dll": {
@@ -690,6 +730,34 @@
       "sha512": "sha512-zeVFVrkFYPkAL1cmXo62D1LVC66VqBiMx+WfZ3aDUmizNECCJewMTk0JwjlgYQcIqxqsK1SjF1CeG74TsokWpQ==",
       "path": "microsoft.windowsappsdk/1.7.250909003",
       "hashPath": "microsoft.windowsappsdk.1.7.250909003.nupkg.sha512"
+    },
+    "SourceGear.sqlite3/3.53.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-PaDT7JwQ00HmXZT1xSGSC0c24A5lVpJYHMrXBuJATdpB2t0nf4Kq9HyPaZhxVW0elPq4XI1s5BLh7qLuObmzFA==",
+      "path": "sourcegear.sqlite3/3.53.3",
+      "hashPath": "sourcegear.sqlite3.3.53.3.nupkg.sha512"
+    },
+    "sqlite-net-pcl/1.11.285": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-6xmGBGgjD0s84PNSbUm5Ojk61TTWahayIHylq0eTk0InHRx1ZQnBlXM+UOVzl2cNEwDpdpNhVoK2y0Yg6XO4sg==",
+      "path": "sqlite-net-pcl/1.11.285",
+      "hashPath": "sqlite-net-pcl.1.11.285.nupkg.sha512"
+    },
+    "SQLitePCLRaw.core/3.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-bjm6FY4lZyP+t7GmiuvSM0QXpFihAvyE0Y9O2yibm3g95AAWJPNnHOKVNJGyPTGIKuK7Pr4Wh8Rd8/aOtAclQw==",
+      "path": "sqlitepclraw.core/3.0.3",
+      "hashPath": "sqlitepclraw.core.3.0.3.nupkg.sha512"
+    },
+    "SQLitePCLRaw.provider.e_sqlite3/3.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-wd+fGvZTrr3BJNe48opSczmC176Okd61ZgoZNQcdvZwkek6to978ccdpcFmNo5GHxCnk29KwT+f+lAZYgfLVZg==",
+      "path": "sqlitepclraw.provider.e_sqlite3/3.0.3",
+      "hashPath": "sqlitepclraw.provider.e_sqlite3.3.0.3.nupkg.sha512"
     },
     "Microsoft.Web.WebView2.Core.Projection/1.0.3179.45": {
       "type": "reference",

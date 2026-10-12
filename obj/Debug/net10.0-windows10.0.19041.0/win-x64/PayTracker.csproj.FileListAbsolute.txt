@@ -1035,3 +1035,7 @@ C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-windows10.0.
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-windows10.0.19041.0\win-x64\qualifiers.txt.intermediate
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-windows10.0.19041.0\win-x64\MultipleQualifiersPerDimensionFound.txt
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-windows10.0.19041.0\win-x64\PayTracker.sourcelink.json
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-windows10.0.19041.0\win-x64\SQLite-net.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-windows10.0.19041.0\win-x64\SQLitePCLRaw.core.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-windows10.0.19041.0\win-x64\SQLitePCLRaw.provider.e_sqlite3.dll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\bin\Debug\net10.0-windows10.0.19041.0\win-x64\e_sqlite3.dll
