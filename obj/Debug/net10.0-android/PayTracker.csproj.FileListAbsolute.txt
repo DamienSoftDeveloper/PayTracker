@@ -2744,3 +2744,13 @@ C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\resi
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\resizetizer\r\drawable-xxxhdpi\payments_tab_dark.png
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\resizetizer\r\drawable-xxxhdpi\statistics_tab.png
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\resizetizer\r\drawable-xxxhdpi\statistics_tab_dark.png
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\typemaps.arm64-v8a.ll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\environment.arm64-v8a.ll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\marshal_methods.arm64-v8a.ll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\compressed_assemblies.arm64-v8a.ll
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\typemaps.arm64-v8a.o
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\environment.arm64-v8a.o
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\compressed_assemblies.arm64-v8a.o
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\marshal_methods.arm64-v8a.o
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\android\jni_remap.arm64-v8a.o
+C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-android\app_shared_libraries\arm64-v8a\libxamarin-app.so

@@ -1,0 +1,85 @@
+PAYTRACKER - WINDOWS INSTALLATION GUIDE
+Version 1.0 | Personal / test release
+
+You do not need Visual Studio to use PayTracker.
+This package is intended for a 64-bit Intel/AMD Windows 10 or Windows 11 PC.
+
+1. EXTRACT THE DOWNLOAD
+
+Right-click the downloaded ZIP and choose Extract All.
+Open the extracted PayTracker_1.0.0.0_Test folder. Keep its contents together,
+including the Dependencies folder. Do not install directly from inside the ZIP.
+
+2. TRUST THE INCLUDED PUBLIC CERTIFICATE
+
+This release is self-signed. Only do this if you trust the developer and received
+the package from them. Installing certificate trust applies to all users of this PC.
+
+- Double-click PayTracker_1.0.0.0_x64.cer.
+- Check that its name/subject is PayTracker (CN=PayTracker).
+- Click Install Certificate.
+- Choose Local Machine, then Next. Approve the administrator prompt if appropriate.
+- Choose the option to place the certificate in a specific store.
+- Click Browse, select Trusted People, and click OK.
+- Click Next, then Finish. Windows should confirm that the import succeeded.
+
+For this release, the certificate's Details tab shows this thumbprint:
+E11F3545D8BA91D962712CE0D47614AFD9624195
+
+The .cer file contains the PUBLIC certificate only, not the private signing key.
+On a work or school-managed PC, ask your administrator to approve installation.
+
+3. INSTALL PAYTRACKER
+
+- Double-click PayTracker_1.0.0.0_x64.msix.
+- Check that the app is PayTracker and the publisher is PayTracker.
+- Click Install and wait for it to finish.
+
+If Windows reports a missing Windows App Runtime dependency:
+- Open Dependencies, then x64.
+- Install Microsoft.WindowsAppRuntime.1.7.msix.
+- Return to the main folder and try the PayTracker installer again.
+
+If another dependency is named, keep the exact message and contact the developer.
+Do not install every processor-architecture folder at random.
+
+4. OPEN THE APP
+
+Open Start, search for PayTracker, and launch it.
+You can right-click its Start entry to pin it to Start or the taskbar.
+There is no need to launch an executable from a build folder.
+
+5. IF INSTALLATION IS BLOCKED
+
+- "Unknown publisher" or a disabled Install button:
+  Check that Step 2 installed the correct certificate into Local Machine >
+  Trusted People, then close and reopen the installer.
+
+- Windows does not know how to open .msix files:
+  Install or update Microsoft's App Installer from the Microsoft Store.
+
+- "An Application Control policy has blocked this file" / Smart App Control:
+  This personal release may not be accepted by your device's security policy.
+  Trusting the certificate does not bypass Smart App Control. Contact the
+  developer for a release signed through a trusted provider, or your administrator
+  for an approved installation route. Do not disable security just to follow this guide.
+
+- Any other error:
+  Send the developer the complete error message and a screenshot.
+
+YOUR DATA AND FUTURE UPDATES
+
+Payments, budgets and spending are saved locally on this device. There is no bank
+connection or automatic syncing between devices. A new installation can start empty.
+
+Avoid uninstalling or resetting PayTracker if you want to keep your records;
+uninstalling/resetting can remove local data. Ask the developer about backup first.
+For an update, close PayTracker and install the newer package over the existing app
+using the same package identity and signing certificate.
+
+After installing, try adding a test payment, closing the app, and reopening it to
+confirm that it was saved. If you have problems, contact the person who supplied it.
+
+Microsoft references:
+https://learn.microsoft.com/en-us/dotnet/maui/windows/deployment/publish-cli?view=net-maui-10.0
+https://support.microsoft.com/en-us/windows/security/threat-malware-protection/smart-app-control-frequently-asked-questions
