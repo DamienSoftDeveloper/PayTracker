@@ -16,14 +16,14 @@
             ContentTemplate="{DataTemplate pages:DashboardPage}" />
 
         <ShellContent
-            Title="Payments"
+            Title="Track Payments"
             Route="payments"
-            ContentTemplate="{DataTemplate pages:PaymentsPage}" />
+            ContentTemplate="{DataTemplate pages:TaskReminderPage}" />
 
         <ShellContent
-            Title="Allowance"
-            Route="allowance"
-            ContentTemplate="{DataTemplate pages:AllowancePage}" />
+            Title="Income"
+            Route="income"
+            ContentTemplate="{DataTemplate pages:IncomePage}" />
 
         <ShellContent
             Title="Statistics"

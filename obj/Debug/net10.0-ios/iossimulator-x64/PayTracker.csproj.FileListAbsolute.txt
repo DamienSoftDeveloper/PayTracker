@@ -320,4 +320,3 @@ C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-ios\iossimul
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-ios\iossimulator-x64\PayTracker.pdb
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-ios\iossimulator-x64\PayTracker.genruntimeconfig.cache
 C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-ios\iossimulator-x64\ref\PayTracker.dll
-C:\Github Repo\Software Dev\PayTracker\PayTracker\obj\Debug\net10.0-ios\iossimulator-x64\build-signature\signature

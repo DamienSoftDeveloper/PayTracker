@@ -57,16 +57,6 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[C:/Github Repo/Software Dev/PayTracker/PayTracker/Pages/AllowancePage.xaml]
-build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = PayTracker.Pages.AllowancePage.xaml
-build_metadata.AdditionalFiles.TargetPath = Pages\AllowancePage.xaml
-build_metadata.AdditionalFiles.RelativePath = Pages\AllowancePage.xaml
-build_metadata.AdditionalFiles.Inflator = SourceGen
-build_metadata.AdditionalFiles.NoWarn = 
-build_metadata.AdditionalFiles.EnableDiagnostics = 
-build_metadata.AdditionalFiles.LineInfo = 
-
 [C:/Github Repo/Software Dev/PayTracker/PayTracker/Pages/DashboardPage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = PayTracker.Pages.DashboardPage.xaml
@@ -77,11 +67,11 @@ build_metadata.AdditionalFiles.NoWarn =
 build_metadata.AdditionalFiles.EnableDiagnostics = 
 build_metadata.AdditionalFiles.LineInfo = 
 
-[C:/Github Repo/Software Dev/PayTracker/PayTracker/Pages/PaymentsPage.xaml]
+[C:/Github Repo/Software Dev/PayTracker/PayTracker/Pages/IncomePage.xaml]
 build_metadata.AdditionalFiles.GenKind = Xaml
-build_metadata.AdditionalFiles.ManifestResourceName = PayTracker.Pages.PaymentsPage.xaml
-build_metadata.AdditionalFiles.TargetPath = Pages\PaymentsPage.xaml
-build_metadata.AdditionalFiles.RelativePath = Pages\PaymentsPage.xaml
+build_metadata.AdditionalFiles.ManifestResourceName = PayTracker.Pages.IncomePage.xaml
+build_metadata.AdditionalFiles.TargetPath = Pages\IncomePage.xaml
+build_metadata.AdditionalFiles.RelativePath = Pages\IncomePage.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
 build_metadata.AdditionalFiles.NoWarn = 
 build_metadata.AdditionalFiles.EnableDiagnostics = 
@@ -92,6 +82,16 @@ build_metadata.AdditionalFiles.GenKind = Xaml
 build_metadata.AdditionalFiles.ManifestResourceName = PayTracker.Pages.StatisticsPage.xaml
 build_metadata.AdditionalFiles.TargetPath = Pages\StatisticsPage.xaml
 build_metadata.AdditionalFiles.RelativePath = Pages\StatisticsPage.xaml
+build_metadata.AdditionalFiles.Inflator = SourceGen
+build_metadata.AdditionalFiles.NoWarn = 
+build_metadata.AdditionalFiles.EnableDiagnostics = 
+build_metadata.AdditionalFiles.LineInfo = 
+
+[C:/Github Repo/Software Dev/PayTracker/PayTracker/Pages/TaskReminderPage.xaml]
+build_metadata.AdditionalFiles.GenKind = Xaml
+build_metadata.AdditionalFiles.ManifestResourceName = PayTracker.Pages.TaskReminderPage.xaml
+build_metadata.AdditionalFiles.TargetPath = Pages\TaskReminderPage.xaml
+build_metadata.AdditionalFiles.RelativePath = Pages\TaskReminderPage.xaml
 build_metadata.AdditionalFiles.Inflator = SourceGen
 build_metadata.AdditionalFiles.NoWarn = 
 build_metadata.AdditionalFiles.EnableDiagnostics = 

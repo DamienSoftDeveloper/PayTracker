@@ -8,7 +8,7 @@ using PayTracker.Services;
 
 namespace PayTracker.Pages;
 
-public partial class PaymentsPage : ContentPage
+public partial class TaskReminderPage : ContentPage
 {
     private readonly PaymentStore _store = PaymentStore.Instance;
     private readonly Label _month = LessonUi.Heading("");
@@ -26,7 +26,7 @@ public partial class PaymentsPage : ContentPage
     private bool _paidMode;
     private bool _loaded;
 
-    public PaymentsPage()
+    public TaskReminderPage()
     {
         InitializeComponent();
         _add = LessonUi.Button("Add one-off payment", () =>

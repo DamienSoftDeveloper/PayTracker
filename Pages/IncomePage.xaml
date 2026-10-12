@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="PayTracker.Pages.AllowancePage"
-             Title="Allowance">
+             x:Class="PayTracker.Pages.IncomePage"
+             Title="Income">
     
     <VerticalStackLayout Padding="24" Spacing="16">
 
         <Label
-            Text="My Allowance"
+            Text="My Income"
             FontSize="28"
             FontAttributes="Bold" />
 
         <Label
-            Text="Track your personal spending."
+            Text="Track your personal income."
             TextColor="Gray" />
 
         <Label

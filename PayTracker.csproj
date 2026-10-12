@@ -72,13 +72,22 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <MauiXaml Update="Pages\AllowancePage.xaml">
+	  <Compile Update="Pages\IncomePage.xaml.cs">
+	    <DependentUpon>IncomePage.xaml</DependentUpon>
+	  </Compile>
+	  <Compile Update="Pages\TaskReminderPage.xaml.cs">
+	    <DependentUpon>TaskReminderPage.xaml</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <MauiXaml Update="Pages\IncomePage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\DashboardPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
-	  <MauiXaml Update="Pages\PaymentsPage.xaml">
+	  <MauiXaml Update="Pages\TaskReminderPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>
 	  <MauiXaml Update="Pages\StatisticsPage.xaml">
